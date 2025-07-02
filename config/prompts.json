@@ -1,0 +1,5 @@
+[
+    "Generate a conventional commit message based on this git diff. Return only the commit message.",
+    "Write a conventional commit message. Output only the message, no explanation.",
+    "Given the following git diff, return a single-line conventional commit message only."
+]

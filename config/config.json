@@ -1,0 +1,4 @@
+{
+    "ollama_model": "llama3",
+    "ollama_api_url": "http://localhost:11434/api/generate"
+}
