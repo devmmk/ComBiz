@@ -1,0 +1,7 @@
+[
+    "Generate a conventional commit message for this git diff. Return ONLY the commit message, no explanation, no quotes, no prefix, no suffix. Format: type(scope): description",
+    "Write a conventional commit message for these changes. Output ONLY the single-line commit message without any additional text or formatting.",
+    "Based on this git diff, return a single conventional commit message. No explanation, no quotes, no prefix text. Just the commit message.",
+    "Create a conventional commit message. Return only the message in format: type(scope): description. No other text.",
+    "Generate a git commit message following conventional commits format. Return the message only, nothing else."
+]
