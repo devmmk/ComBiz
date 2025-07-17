@@ -25,11 +25,33 @@ chmod +x "$INSTALL_BIN/combiz"
 
 cp -r config/* "$INSTALL_CONF/"
 
-pip install --user requests
+# Install Python dependencies
+pip install --user requests --break-system-packages
 
+# Check if $INSTALL_BIN is in PATH
 if ! grep -q "$INSTALL_BIN" <<< "$PATH"; then
-    echo -e "\033[93mWarning: $INSTALL_BIN is not in your PATH. Add it to use 'combiz' globally.\033[0m"
+    echo -e "\033[93mWarning: $INSTALL_BIN is not in your PATH. Adding it...\033[0m"
+
+    # Detect shell and corresponding config file
+    SHELL_NAME=$(basename "$SHELL")
+    case "$SHELL_NAME" in
+        bash) CONFIG_FILE="$HOME/.bashrc" ;;
+        zsh) CONFIG_FILE="$HOME/.zshrc" ;;
+        *) CONFIG_FILE="$HOME/.profile" ;;  # fallback
+    esac
+
+    # Add to PATH if not already added
+    NEW_PATH='export PATH="$HOME/.local/bin:$PATH"'
+    if ! grep -Fxq "$NEW_PATH" "$CONFIG_FILE"; then
+        echo "$NEW_PATH" >> "$CONFIG_FILE"
+        echo "Added \$HOME/.local/bin to PATH in $CONFIG_FILE"
+    else
+        echo "\$HOME/.local/bin is already in PATH in $CONFIG_FILE"
+    fi
+
+    echo -e "\033[33mPlease restart your terminal or run:\033[0m source $CONFIG_FILE"
 fi
 
+# Final message
 echo -e "\n\033[32mComBiz Installed Successfully!\033[0m"
 echo -e "Run \033[36mcombiz\033[0m to start using it."
