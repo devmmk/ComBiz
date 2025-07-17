@@ -40,14 +40,10 @@ if ! grep -q "$INSTALL_BIN" <<< "$PATH"; then
         *) CONFIG_FILE="$HOME/.profile" ;;  # fallback
     esac
 
-    # Add to PATH if not already added
     NEW_PATH='export PATH="$HOME/.local/bin:$PATH"'
-    if ! grep -Fxq "$NEW_PATH" "$CONFIG_FILE"; then
-        echo "$NEW_PATH" >> "$CONFIG_FILE"
-        echo "Added \$HOME/.local/bin to PATH in $CONFIG_FILE"
-    else
-        echo "\$HOME/.local/bin is already in PATH in $CONFIG_FILE"
-    fi
+
+    echo "$NEW_PATH" >> "$CONFIG_FILE"
+    echo "Added \$HOME/.local/bin to PATH in $CONFIG_FILE"
 
     echo -e "\033[33mPlease restart your terminal or run:\033[0m source $CONFIG_FILE"
 fi
