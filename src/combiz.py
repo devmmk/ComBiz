@@ -29,8 +29,10 @@ You can pass any standard `git commit` options after the command.
 Examples:
     combiz --author "John Doe"
     combiz --no-verify
+    combiz --model llama3.2:latest
+    combiz --url http://localhost:11434/api/generate
 
-Author: github.com/devmmk
+Author: github.com/devmmk - github.com/omidmousavi
 """
 
 def show_error(msg, _exit=0):
@@ -73,6 +75,13 @@ if not os.path.exists(PROMPT_FILE):
     show_error(f"Prompts file not found at {PROMPT_FILE}\n", _exit=1)
 with open(PROMPT_FILE, "r") as f:
     prompts = json.load(f)
+
+
+def update_config(param, value):
+    config[param] = value
+    with open(CONFIG_FILE, "w") as f:
+        json.dump(config, f, indent=4)
+    show_info("Updated " + param + " to " + value)
 
 def show_banner():
     banner =  '                                \x1b[0m\n    \x1b[34m█\x1b[35m█                  \x1b[36m█\x1b[34m█    \x1b[32m█\x1b[36m█\x1b[0m\n                        \x1b[34m█\x1b[35m█  \x1b[93m█\x1b[32m█  \x1b[0m\n    \x1b[31m█\x1b[33m█    \x1b[35m█\x1b[31m█  \x1b[32m█\x1b[36m█  \x1b[31m█\x1b[33m█\x1b[93m█\x1b[32m█  \x1b[35m█\x1b[31m█  \x1b[32m█\x1b[36m█\x1b[34m█\x1b[35m█\x1b[0m\n    \x1b[33m█\x1b[93m█\x1b[32m█\x1b[36m█\x1b[34m█\x1b[35m█\x1b[31m█\x1b[33m█\x1b[93m█\x1b[32m█\x1b[36m█\x1b[34m█\x1b[35m█\x1b[31m█\x1b[33m█\x1b[93m█\x1b[32m█\x1b[36m█  \x1b[31m█\x1b[33m█\x1b[93m█\x1b[32m█\x1b[36m█\x1b[34m█\x1b[35m█\x1b[31m█\x1b[0m\n    \x1b[93m█\x1b[32m█                          \x1b[0m\n  \x1b[33m█\x1b[93m█    \x1b[31m█\x1b[33m█\x1b[93m█\x1b[32m█  \x1b[35m█\x1b[31m█               \x1b[1;95mv1\x1b[0m\n'
@@ -143,9 +152,19 @@ def select_best_message(results: list[str], git_options=None):
 
 def main():
     show_banner()
+
     if len(sys.argv) > 1 and sys.argv[1] in ("--help", "-h"):
-        print(HELP_MESSAGE)
+        print(HELP_MESSAGE)   
+        sys.exit(0)        
+
+    if len(sys.argv) == 3:
+        if sys.argv[1] in ("--model", "-m"):
+            update_config('ollama_model', sys.argv[2])        
+        elif sys.argv[1] in ("--url", "-u"):
+            update_config('ollama_api_url', sys.argv[2])        
+
         sys.exit(0)
+
     git_options = []
     if len(sys.argv) > 1:
         args = [a for a in sys.argv[1:] if a not in ("--help", "-h")]
