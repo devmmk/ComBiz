@@ -131,23 +131,22 @@ def suggest_emoji(text: str) -> str:
     except FileNotFoundError:
         return text
 
-    def normalize(s: str) -> list[str]:
-        return re.findall(r"\b\w+\b", s.lower())
-
-    text_words = set(normalize(text))
-
     best_score = 0
     best_emoji = None
-
+    
     for item in gitmojis:
-        desc_words = set(normalize(item["description"]))
-        score = len(text_words & desc_words)
+        score = 0
+        for word in item["description"].split():
+            if word.lower() in text.lower():
+                score += 1
+        
         if score > best_score:
             best_score = score
             best_emoji = item["emoji"]
-
+    
     if best_emoji:
         return f"{best_emoji} {text}"
+    
     return text
 
 def select_and_commit(messages: list[str], git_options=None, use_emoji=False):
@@ -193,7 +192,7 @@ def main():
 
     show_info("Generating commit messages...\n")
     messages = generate_commit_messages(diff)
-    select_and_commit(messages, git_options)
+    select_and_commit(messages, git_options, use_emoji)
 
 if __name__ == "__main__":
     main()
