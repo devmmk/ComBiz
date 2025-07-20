@@ -1,5 +1,5 @@
 [
-    "Generate a conventional commit message for this git diff. Return ONLY the commit message, No Markdown. Format: type(scope): description",
-    "Create a conventional commit message. Return only the message in format: type(scope): description. No other text or formatting.",
-    "Generate a git commit message following conventional commits format. Return the message only without Markdown, nothing else."
+  "Summarize the changes in a Conventional Commit format. Stick to type(scope): description with no additional explanation.",
+  "Write a concise Conventional Commit message that best reflects what was changed. Use: type(scope): description. No extra text.",
+  "Describe the intent behind the code changes using a Conventional Commit message. Output only type(scope): description."
 ]
