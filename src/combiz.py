@@ -6,6 +6,7 @@
 import json
 import os
 import sys
+import re
 import subprocess
 
 # --- CLI Colors ---
@@ -13,7 +14,7 @@ RED, GREEN, YELLOW, BLUE, CYAN, WHITE, RESET = "\033[91m", "\033[92m", "\033[93m
 BOLD = "\033[1m"
 
 HELP_MESSAGE = f"""
-Usage: combiz [git commit options]
+Usage: combiz [--emoji] [git commit options]
 
 Generates a commit message based on your staged changes using a chat-compatible AI model (OpenAI/Ollama-compatible).
 
@@ -48,11 +49,14 @@ while True:
 # --- Load config ---
 CONFIG_FILE = os.path.expanduser("~/.combiz/config.json")
 PROMPT_FILE = os.path.expanduser("~/.combiz/prompts.json")
+EMOJI_FILE = os.path.expanduser("~/.combiz/emoji.json")
 
 if not os.path.exists(CONFIG_FILE):
     show_error(f"Config file not found at {CONFIG_FILE}\n", _exit=1)
 if not os.path.exists(PROMPT_FILE):
     show_error(f"Prompts file not found at {PROMPT_FILE}\n", _exit=1)
+if not os.path.exists(EMOJI_FILE):
+    show_warn(f"Emoji file not found at {EMOJI_FILE}, emoji suggestions will be disabled.")
 
 with open(CONFIG_FILE) as f:
     config = json.load(f)
@@ -71,7 +75,10 @@ def show_banner():
 def get_git_diff():
     return subprocess.run(['git', 'diff', '--cached'], capture_output=True, text=True).stdout.strip()
 
-def get_ai_response(prompt: str) -> str | None:
+def get_ai_response(
+    prompt,
+    role="You are a concise commit message generator. Output a single-line conventional commit message only."
+    ) -> str | None:
     try:
         headers = {"Content-Type": "application/json"}
         if API_KEY:
@@ -80,7 +87,7 @@ def get_ai_response(prompt: str) -> str | None:
         payload = {
             "model": MODEL,
             "messages": [
-                {"role": "system", "content": "You are a concise commit message generator. Output a single-line conventional commit message only."},
+                {"role": "system", "content": role},
                 {"role": "user", "content": prompt}
             ],
             "stream": False
@@ -105,12 +112,40 @@ def generate_commit_messages(diff: str) -> list[str]:
             results.append(response)
     return results
 
-def select_and_commit(messages: list[str], git_options=None):
+
+def suggest_emoji(text: str) -> str:
+    try:
+        with open(EMOJI_FILE) as f:
+            gitmojis = json.load(f)
+    except FileNotFoundError:
+        return text
+
+    def normalize(s: str) -> list[str]:
+        return re.findall(r"\b\w+\b", s.lower())
+
+    text_words = set(normalize(text))
+
+    best_score = 0
+    best_emoji = None
+
+    for item in gitmojis:
+        desc_words = set(normalize(item["description"]))
+        score = len(text_words & desc_words)
+        if score > best_score:
+            best_score = score
+            best_emoji = item["emoji"]
+
+    if best_emoji:
+        return f"{best_emoji} {text}"
+    return text
+
+def select_and_commit(messages: list[str], git_options=None, use_emoji=False):
     if not messages:
         show_error("No commit messages generated.\n", _exit=1)
 
     print(f"{BOLD+CYAN}Generated Commit Messages:{RESET}")
     for i, msg in enumerate(messages, 1):
+        if use_emoji: msg = suggest_emoji(msg)
         print(f"{BOLD+CYAN}({i}){RESET} {WHITE}{msg}")
 
     while True:
@@ -130,10 +165,15 @@ def select_and_commit(messages: list[str], git_options=None):
             show_error(f"Commit failed: {e}\n", _exit=1)
 
 def main():
+    global use_emoji
     show_banner()
     if len(sys.argv) > 1 and sys.argv[1] in ("--help", "-h"):
         print(HELP_MESSAGE)
         return
+    
+    use_emoji = "--emoji" in sys.argv
+    if use_emoji:
+        sys.argv.remove("--emoji")
 
     git_options = sys.argv[1:]
     diff = get_git_diff()
