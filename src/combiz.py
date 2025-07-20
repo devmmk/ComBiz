@@ -78,13 +78,13 @@ def get_git_diff():
         ['git', 'diff', '--cached', '--no-color'],
         capture_output=True,
         text=True,
+        errors='replace',
         check=True
     )
     .stdout
-    .encode('utf-8', 'ignore')
-    .decode('utf-8')
     .strip()
     )
+
 
 def get_ai_response(
     prompt,
@@ -126,7 +126,7 @@ def generate_commit_messages(diff: str) -> list[str]:
 
 def suggest_emoji(text: str) -> str:
     try:
-        with open(EMOJI_FILE, "r") as f:
+        with open(EMOJI_FILE) as f:
             gitmojis = json.load(f)
     except FileNotFoundError:
         return text
