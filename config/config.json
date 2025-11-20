@@ -1,0 +1,4 @@
+{
+    "api_url": "http://localhost:11434/v1/chat/completions",
+    "ai_model": "qwen2.5-coder:1.5b"
+}

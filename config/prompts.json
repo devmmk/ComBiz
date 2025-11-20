@@ -1,0 +1,5 @@
+[
+  "Summarize the changes in a Conventional Commit format. Stick to type(scope): description with no additional explanation.",
+  "Write a concise Conventional Commit message that best reflects what was changed. Use: type(scope): description. No extra text.",
+  "Describe the intent behind the code changes using a Conventional Commit message. Output only type(scope): description."
+]
